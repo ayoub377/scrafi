@@ -19,14 +19,12 @@
 
 from __future__ import unicode_literals
 
-
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 
 from woob.capabilities.bank.base import CapBank
 
 from .browser import IneoBrowser
-
 
 __all__ = ['IneoModule']
 
@@ -52,14 +50,11 @@ class IneoModule(Module, CapBank):
             self.config['password'].get()
         )
 
-
     def iter_accounts(self):
         return self.browser.get_accounts()
 
-
     def get_account(self, id_):
         return self.browser.get_account(id_)
-            
 
     def iter_history(self, id_, **kwargs):
         return self.browser.iter_history(id_, **kwargs)

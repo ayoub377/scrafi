@@ -19,14 +19,12 @@
 
 from __future__ import unicode_literals
 
-
 import sys
 from woob.browser import URL, need_login
 from woob.browser.selenium import SeleniumBrowser, webdriver
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
-from woob.scrafi_exceptions import IdNotFoundError, WebsiteError, WrongCredentialsError
-
+from ScraFi.exceptions.scrafi_exceptions import WrongCredentialsError, WebsiteError, IdNotFoundError
 from .pages import LoginPage, HomePage, AccountsPage, HistoryPage
 
 
@@ -39,7 +37,7 @@ class CIHBrowser(SeleniumBrowser):
         vdisplay.start()
 
     HEADLESS = False
-    
+
     DEFAULT_WAIT = 30
 
     DRIVER = webdriver.Chrome
@@ -64,25 +62,20 @@ class CIHBrowser(SeleniumBrowser):
             self.page.login(self.username, self.password)
             try:
                 self.wait_until_is_here(self.home_page)
-                try:
-                    self.driver.find_element(By.XPATH, '//div[text()="Chargement en cours ..."]').text
-                    self.wait_xpath_invisible('//div[text()="Chargement en cours ..."]')
-                except NoSuchElementException:
-                    pass
-                self.logged = True
             except TimeoutException:
-                self.error_msg = 'credentials'
+                self.error_msg = 'Wrong credentials'
                 raise WrongCredentialsError
-        except TimeoutException:
-            self.error_msg = 'bank'
+            print('Login successful')
+        except NoSuchElementException:
+            self.error_msg = 'Website error'
             raise WebsiteError
 
     @need_login
     def get_accounts(self):
-        self.wait_xpath_clickable('//i[@class="iAccount"]')
-        self.driver.find_element(By.XPATH, '//i[@class="iAccount"]').click()
-        self.wait_xpath_clickable('//a[@href="/adriaClient/app/account/list"]/i')
-        self.driver.find_element(By.XPATH, '//a[@href="/adriaClient/app/account/list"]/i').click()
+        self.driver.get(self.BASEURL + '/adriaClient/app/account/list')
+        # wait for the page to load
+        self.wait_xpath_clickable('//*[@id="appRoot"]/div/div[3]/div[2]/div[1]/div/div/div/div/div/div[1]/div[2]/button')
+        # click on the button to show the accounts
         self.wait_until_is_here(self.accounts_page)
         return self.page.get_accounts()
 
@@ -93,7 +86,7 @@ class CIHBrowser(SeleniumBrowser):
                 return account
         self.error_msg = 'ID'
         raise IdNotFoundError
-    
+
     def go_to_history(self):
         self.wait_xpath_clickable('//i[@class="iAccount"]')
         self.driver.find_element(By.XPATH, '//i[@class="iAccount"]').click()

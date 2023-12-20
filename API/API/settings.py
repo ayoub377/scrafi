@@ -17,7 +17,6 @@ import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
 
@@ -26,7 +25,6 @@ SECRET_KEY = 'django-insecure-777@o9r5g4rf6fjd_heu%3j3cq641%55)2#9&%lao4wi1o$iqz
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
 
 ALLOWED_HOSTS = ['localhost', '0.0.0.0', '127.0.0.1', '159.65.95.248', 'host.docker.internal']
 # 'localhost', '0.0.0.0', '127.0.0.1', 
@@ -46,7 +44,6 @@ INSTALLED_APPS = [
     'scrafi_api'
 ]
 
-
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -60,10 +57,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
-
 
 # CORS_ALLOWED_ORIGINS = ["http://no.ma"]
 
@@ -83,7 +78,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOW_HEADERS = ['*']
 
 
-
 ADMINS = [('Zhor', 'zhor.abid@gmail.com'), ('ZhorGen', 'zhor.generafi@gmail.com')]
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
@@ -101,7 +95,6 @@ EMAIL_HOST_PASSWORD = 'generafi@21'
 MANAGERS = ADMINS
 
 SERVER_EMAIL = 'scrafiserver@gmail.com'
-
 
 # SECURE_SSL_REDIRECT = True
 
@@ -149,7 +142,6 @@ LOGGING = {
     }
 }
 
-
 # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 
@@ -162,9 +154,7 @@ REST_FRAMEWORK = {
     ]
 }
 
-
 ROOT_URLCONF = 'API.urls'
-
 
 TEMPLATES = [
     {
@@ -182,9 +172,7 @@ TEMPLATES = [
     },
 ]
 
-
 WSGI_APPLICATION = 'API.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
@@ -195,7 +183,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -215,7 +202,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/3.2/topics/i18n/
 
@@ -229,7 +215,6 @@ USE_L10N = True
 
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
@@ -239,6 +224,5 @@ STATIC_URL = '/static/'
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
 LOGIN_URL = '/admin/login/'
-
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

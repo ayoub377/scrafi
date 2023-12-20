@@ -16,45 +16,47 @@ from .woober import setup_logger, notify_zhor
 
 redis = Redis()
 path = os.path.expanduser('~')
+
 if "C:" in path:
     path = path.replace('\\', '/')
+
 
 def record_request(request):
     customfile = f'{path}/scrafi_project/Logs/django/custom/custom.log'
     custom_logger = setup_logger(f'custom_logger', customfile)
     dilog = {}
     log = ''
-    
+
     if request.method == 'POST':
         dilog['Path'] = 'POST  ' + request.path_info
     elif request.method == 'GET':
         dilog['Job ID'] = request.query_params['job_id']
         dilog['Path'] = 'GET  ' + request.path_info
-        
+
     if request.auth:
         dilog['Authorization'] = request.auth
-        
+
     dilog['Headers'] = request._request.headers
-    
+
     ip = request.META.get('HTTP_X_FORWARDED_FOR')
     rmt_addr = request.META.get('REMOTE_ADDR')
     if ip:
         dilog['IP'] = ip
     else:
         dilog['Remote address'] = rmt_addr
-        
+
     if request.META.get('HTTP_REFERER'):
         dilog['Referer'] = request.META.get('HTTP_REFERER')
-        
+
     if request._request.COOKIES:
         dilog['Cookies'] = request._request.COOKIES
 
     for key, value in dilog.items():
         log += f"\n     {key} : {value}"
-    
+
     log += "\n"
     custom_logger.info(log)
-    
+
 
 def process_history_request(request, bank, endpoint):
     customfile = f'{path}/scrafi_project/Logs/django/custom/custom.log'
@@ -63,12 +65,14 @@ def process_history_request(request, bank, endpoint):
         bank = 'chaabi'
 
     available_banks = ['akhdar', 'awb', 'bmce', 'cam,' 'cdm', 'cfg', 'chaabi', 'cih', 'ineo']
+
     if bank not in available_banks:
         response = json.dumps([{"Response": "Error", "ERROR": "Le connecteur %s n'existe pas." % bank}])
         custom_logger.info('[{"Response": "Error", "ERROR": "Le connecteur %s n\'existe pas."}]' % bank)
         return HttpResponse(response, content_type='text/json')
-        
+
     username = request.data['username']
+
     if username == '':
         response = json.dumps([{"Response": "Error", "ERROR": "L'identifiant est obligatoire."}])
         custom_logger.info('[{"Response": "Error", "ERROR": "L\'identifiant est obligatoire."}]')
@@ -101,10 +105,12 @@ def process_history_request(request, bank, endpoint):
         if not isinstance(date, datetime):
             try:
                 start_date = datetime.strptime(date, '%Y%m%d')
-                
+
             except ValueError:
-                response = json.dumps([{"Response": "Error", "ERROR": "La date doit être sous format : AAAAmmjj. (exemple: 20210825)"}])
-                custom_logger.info('[{"Response": "Error", "ERROR": "La date doit être sous format : AAAAmmjj. (exemple: 20210825)"}]')
+                response = json.dumps(
+                    [{"Response": "Error", "ERROR": "La date doit être sous format : AAAAmmjj. (exemple: 20210825)"}])
+                custom_logger.info(
+                    '[{"Response": "Error", "ERROR": "La date doit être sous format : AAAAmmjj. (exemple: 20210825)"}]')
                 return HttpResponse(response, content_type='text/json')
     else:
         start_date = 'Now'
@@ -114,9 +120,11 @@ def process_history_request(request, bank, endpoint):
         response = json.dumps(job_id, indent=4)
     except Exception as e:
         notify_zhor(flow=flow, module=bank, date=start_date, e=e)
-        response = json.dumps([{"Response": "Error", "ERROR": "Un problème s'est produit. Veuillez réenvoyer votre requête plus tard."}])
-        custom_logger.info('[{"Response": "Error", "ERROR": "Un problème s\'est produit. Veuillez réenvoyer votre requête plus tard."}]')
-    
+        response = json.dumps(
+            [{"Response": "Error", "ERROR": "Un problème s'est produit. Veuillez réenvoyer votre requête plus tard."}])
+        custom_logger.info(
+            '[{"Response": "Error", "ERROR": "Un problème s\'est produit. Veuillez réenvoyer votre requête plus tard."}]')
+
     return HttpResponse(response, content_type='text/json')
 
 
@@ -152,22 +160,24 @@ def process_bill_request(request, bill, endpoint):
             try:
                 start_date = datetime.strptime(date, '%Y%m')
             except ValueError:
-                response = json.dumps([{"Response": "Error", "ERROR": 'La date doit être sous format : AAAAmm. (exemple: 202108)'}])
-                custom_logger.info('[{"Response": "Error", "ERROR": "La date doit être sous format : AAAAmm. (exemple: 202108)"}]')
+                response = json.dumps(
+                    [{"Response": "Error", "ERROR": 'La date doit être sous format : AAAAmm. (exemple: 202108)'}])
+                custom_logger.info(
+                    '[{"Response": "Error", "ERROR": "La date doit être sous format : AAAAmm. (exemple: 202108)"}]')
                 return HttpResponse(response, content_type='text/json')
-
     elif endpoint == 'create':
         flow = 'connect'
         start_date = 'Now'
-
     job_id = add_to_bill_q(flow, username, password, bill, start_date)
     try:
         response = json.dumps(job_id, indent=4)
     except Exception as e:
         notify_zhor(flow=flow, module=bill, date=start_date, e=e)
-        response = json.dumps([{"Response": "Error", "ERROR": "Un problème s'est produit. Veuillez réenvoyer votre requête plus tard."}])
-        custom_logger.info('[{"Response": "Error", "ERROR": "Un problème s\'est produit. Veuillez réenvoyer votre requête plus tard."}]')
-    
+        response = json.dumps(
+            [{"Response": "Error", "ERROR": "Un problème s'est produit. Veuillez réenvoyer votre requête plus tard."}])
+        custom_logger.info(
+            '[{"Response": "Error", "ERROR": "Un problème s\'est produit. Veuillez réenvoyer votre requête plus tard."}]')
+
     return HttpResponse(response, content_type='text/json')
 
 
@@ -209,10 +219,12 @@ class Results(ProtectedResourceView, APIView):
             return HttpResponse(response, content_type='text/json')
         else:
             if job in FailedJobRegistry(name='scrafi', connection=redis):
-                response = json.dumps({"Response": "Error", "ERROR": "Un problème s'est produit. Veuillez réenvoyer votre requête plus tard."})
-                custom_logger.info('{"Response": "Error", "ERROR": "Un problème s\'est produit. Veuillez réenvoyer votre requête plus tard."}')
-                return HttpResponse(response, content_type='text/json')      
-            else:          
+                response = json.dumps({"Response": "Error",
+                                       "ERROR": "Un problème s'est produit. Veuillez réenvoyer votre requête plus tard."})
+                custom_logger.info(
+                    '{"Response": "Error", "ERROR": "Un problème s\'est produit. Veuillez réenvoyer votre requête plus tard."}')
+                return HttpResponse(response, content_type='text/json')
+            else:
                 response = json.dumps(job.result, indent=4, ensure_ascii=False).encode('utf8')
                 custom_logger.info('Sending Resultls')
                 return HttpResponse(response, content_type='text/json')
@@ -242,7 +254,7 @@ def other_paths(request):
     other_logger = setup_logger(f'other_logger', otherfile)
     dilog = {}
     log = ''
-    
+
     ip = request.META.get('HTTP_X_FORWARDED_FOR')
     rmt_addr = request.META.get('REMOTE_ADDR')
     if ip:
@@ -252,7 +264,7 @@ def other_paths(request):
 
     if request.META.get('HTTP_REFERER'):
         dilog['Referer'] = request.META.get('HTTP_REFERER')
-        
+
     dilog['Headers'] = request.headers
     dilog['Method'] = request.method
     dilog['Path'] = 'http://...' + request.path_info
@@ -260,15 +272,16 @@ def other_paths(request):
 
     if request.COOKIES:
         dilog['Cookies'] = request.COOKIES
-        
+
     if request.method == 'POST':
         dilog['Data'] = request.POST.dict()
     elif request.method == 'GET':
         dilog['Data'] = request.GET.dict()
-    
+
     for key, value in dilog.items():
         log += f"\n     {key} : {value}"
-    
+
     log += "\n"
     other_logger.info(log)
-    return HttpResponseForbidden('<!doctype html>\n<html lang="en">\n\n<head>\n<title>403 Forbidden</title>\n</head>\n\n<body>\n<h1>403 Forbidden</h1>\n<p></p>\n</body>\n\n</html>')
+    return HttpResponseForbidden(
+        '<!doctype html>\n<html lang="en">\n\n<head>\n<title>403 Forbidden</title>\n</head>\n\n<body>\n<h1>403 Forbidden</h1>\n<p></p>\n</body>\n\n</html>')

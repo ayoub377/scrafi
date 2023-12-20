@@ -62,6 +62,7 @@ def get_caps(module, config):
     except KeyError:
         return ['**** FILL ME **** (running woob config update could help)']
 
+
 def new_modules(start, end):
     os.chdir(os.path.join(os.path.dirname(__file__), os.path.pardir))
     modules_info = configparser.ConfigParser()

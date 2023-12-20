@@ -183,7 +183,8 @@ class BoobankMuninPlugin(object):
 
     def print_errors(self, errors):
         for backend, err, backtrace in errors:
-            print((u'%s(%s): %s' % (type(err).__name__, backend.name, err)).encode(sys.stdout.encoding or locale.getpreferredencoding(), 'replace'), file=sys.stderr)
+            print((u'%s(%s): %s' % (type(err).__name__, backend.name, err)).encode(
+                sys.stdout.encoding or locale.getpreferredencoding(), 'replace'), file=sys.stderr)
             if isinstance(err, BrowserIncorrectPassword):
                 self.woob.backends_config.edit_backend(backend.name, backend.NAME, {'_enabled': 'false'})
 
@@ -220,13 +221,14 @@ class BoobankMuninPlugin(object):
         elif cmd == 'help' or cmd == '-h' or cmd == '--help':
             self.display_help()
         elif cmd == 'reload' or cmd == '--reload' or \
-             cmd == 'reset' or cmd == '--reset':
+            cmd == 'reset' or cmd == '--reset':
             self.clear_cache()
 
         if self.cache:
             self.cache.close()
 
         sys.exit(0)
+
 
 if __name__ == '__main__':
     logging.basicConfig()

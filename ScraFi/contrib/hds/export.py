@@ -29,6 +29,7 @@ from woob.core import Woob
 from woob.exceptions import ModuleLoadError
 import sys
 import logging
+
 level = logging.DEBUG
 logging.basicConfig(stream=sys.stdout, level=level)
 
@@ -76,6 +77,7 @@ def main(filename):
 
     sys.stdout.write('Getting %d new storiese... ' % len(to_fetch))
     sys.stdout.flush()
+
     for id in to_fetch:
         story = br.get_story(id)
         if not story:
@@ -103,6 +105,7 @@ def main(filename):
         db.commit()
     sys.stdout.write(' ok\n')
     return 0
+
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:

@@ -26,7 +26,7 @@ from dateutil.relativedelta import relativedelta
 from woob.tools.backend import Module, BackendConfig
 from woob.tools.value import ValueBackendPassword
 from woob.capabilities.bank import CapBank
-from woob.scrafi_exceptions import DateLimitError
+
 
 from .browser import BMCEBrowser
 

@@ -19,7 +19,6 @@
 
 from __future__ import unicode_literals
 
-
 import hashlib
 from datetime import datetime
 from decimal import Decimal
@@ -30,12 +29,13 @@ from woob.capabilities.bank.base import Account, Transaction
 from woob.browser.selenium import SeleniumPage, VisibleXPath
 from selenium.webdriver.common.by import By
 from selenium.common.exceptions import TimeoutException
-from woob.scrafi_exceptions import NoHistoryError
+
+from ScraFi.exceptions.scrafi_exceptions import NoHistoryError
 
 
 class LoginPage(SeleniumPage):
     is_here = VisibleXPath('//form[@id="register_form"]')
-    
+
     def login(self, username, password):
         self.driver.find_element(By.XPATH, '//input[@name="username"]').send_keys(username)
         self.driver.find_element(By.XPATH, '//input[@name="password"]').click()
@@ -48,11 +48,11 @@ class LoginPage(SeleniumPage):
 
 
 class HomePage(SeleniumPage):
-    is_here = VisibleXPath('//p[contains(text(), " Solde ")]')
+    is_here = VisibleXPath('//*[@id="appRoot"]/div/div[3]/div[2]/div[1]/div/div[1]/div/div/div/div/div/div/div/div[1]/div[2]/div[1]/h2')
 
 
 class AccountsPage(SeleniumPage):
-    is_here = VisibleXPath('//h1[contains(text(), " des comptes")]')
+    is_here = VisibleXPath('//*[@id="appRoot"]/div/div[3]/div[2]/div[1]/div/div/div/div/div/div[1]/div[1]/h1/span')
 
     def get_accounts(self):
         accounts = []
@@ -74,7 +74,7 @@ class CIHTransaction(Transaction):
     def __repr__(self):
         return '<%s id=%r date=%r label=%r solde=%r>' % (
             type(self).__name__, self.id, self.date, self.label, self.solde)
-            
+
 
 class HistoryPage(SeleniumPage):
     is_here = VisibleXPath('//h1[contains(text(), "Extrait de compte")]')
@@ -84,26 +84,27 @@ class HistoryPage(SeleniumPage):
         self.driver.find_element(By.XPATH, '//div[@class="requiredDiv"]').click()
         self.browser.wait_xpath_clickable('//select[@name="NumeroCompte"]/option')
         self.driver.find_element(By.XPATH, './/option[contains(text(), "%s")]' % account.id)
-        
+
         english_months = {'01': 'January ',
-                        '02': 'February ',
-                        '03': 'March ',
-                        '04': 'April ',
-                        '05': 'May ',
-                        '06': 'June ',
-                        '07': 'July ',
-                        '08': 'August ',
-                        '09': 'September ',
-                        '10': 'October ',
-                        '11': 'November ',
-                        '12': 'December '}
+                          '02': 'February ',
+                          '03': 'March ',
+                          '04': 'April ',
+                          '05': 'May ',
+                          '06': 'June ',
+                          '07': 'July ',
+                          '08': 'August ',
+                          '09': 'September ',
+                          '10': 'October ',
+                          '11': 'November ',
+                          '12': 'December '}
 
         _m_y = english_months[kwargs['start_date'][3:5]] + kwargs['start_date'][-4:]
         _day = int(kwargs['start_date'][:2])
         divs = [
             self.driver.find_element(By.XPATH, '//input[@placeholder="Date de début"]'),
-            self.driver.find_element(By.XPATH, '//input[@placeholder="Date de fin"]')]
-        
+            self.driver.find_element(By.XPATH, '//input[@placeholder="Date de fin"]')
+        ]
+
         for div in divs:
             div.click()
             x = True
@@ -113,10 +114,11 @@ class HistoryPage(SeleniumPage):
                 month_name = month.find_element(By.XPATH, './/div[@class="react-datepicker__header"]/div[1]').text
 
                 if month_name == _m_y:
-                    days = month.find_elements(By.XPATH, './/div[@class="react-datepicker__month"]/div/div[not(contains(@class, "--outside-month"))]')
+                    days = month.find_elements(By.XPATH,
+                                               './/div[@class="react-datepicker__month"]/div/div[not(contains(@class, "--outside-month"))]')
                     for day in days:
                         day_number = int(day.text)
-                        
+
                         if day_number == _day:
                             day.click()
                             _m_y = english_months[kwargs['end_date'][3:5]] + kwargs['end_date'][-4:]
@@ -140,14 +142,14 @@ class HistoryPage(SeleniumPage):
         lines = self.driver.find_elements(By.XPATH, '//table[@class="table"]/tbody[1]/tr')
         for line in lines:
             tr = CIHTransaction()
-            
+
             tr.label = line.find_element(By.XPATH, './/td[1]').text
             tr.date = datetime.strptime(line.find_element(By.XPATH, './/td[5]').text, '%Y-%m-%d').date()
-            
+
             debit = self.decimalism(line.find_element(By.XPATH, './/td[3]/div/div').text)
             credit = self.decimalism(line.find_element(By.XPATH, './/td[2]/div/div').text)
             tr.solde = credit - debit
-            
+
             str_2_hash = tr.label + tr.date.strftime('%Y-%m-%d') + str(tr.solde)
             tr.id = hashlib.md5(str_2_hash.encode("utf-8")).hexdigest()
 
@@ -160,10 +162,10 @@ class HistoryPage(SeleniumPage):
             ids.append(tr.id)
             trs.append(tr)
         return trs
-                    
+
     def decimalism(self, stringy):
         stringy = stringy.replace(' ', '').replace(',', '')
         if stringy == '-' or stringy == '':
-            return Decimal('0')  
+            return Decimal('0')
         else:
             return Decimal(stringy)
